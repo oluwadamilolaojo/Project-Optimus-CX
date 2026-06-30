@@ -134,6 +134,11 @@ function ratioVerdict(actualN, role, size, lens) {
   if (actualN > ideal * 1.15) return "Under";
   return "Within";
 }
+function targetText(role, size, lens) {
+  if (lens === "industry") return role === "qa" ? "1:20–25" : "1:12–15";
+  const ideal = (role === "qa" ? QA_IDEAL : TL_IDEAL)[size];
+  return "1:" + ideal;
+}
 
 const V_STYLE = {
   Within: [T.green, T.greenBg], Great: [T.green, T.greenBg], Good: [T.steel, T.steelBg],
@@ -425,8 +430,8 @@ function Loading({ rows, lens, setLens, openRow, setOpenRow, comments, setCommen
                     <td style={tdC}><SizeTag s={a.size} /></td>
                     <td style={tdC}>{a.bill}</td>
                     <td style={tdC}>{a.act}</td>
-                    <td style={tdC}><LoadCell actualN={qaN} ideal={lens === "segment" ? QA_IDEAL[a.size] : 22.5} verdict={qv} /></td>
-                    <td style={tdC}><LoadCell actualN={tlN} ideal={lens === "segment" ? TL_IDEAL[a.size] : 13.5} verdict={tv} /></td>
+                    <td style={tdC}><LoadCell actualN={qaN} ideal={lens === "segment" ? QA_IDEAL[a.size] : 22.5} verdict={qv} target={targetText("qa", a.size, lens)} /></td>
+                    <td style={tdC}><LoadCell actualN={tlN} ideal={lens === "segment" ? TL_IDEAL[a.size] : 13.5} verdict={tv} target={targetText("tl", a.size, lens)} /></td>
                     <td style={tdC}><span style={{ fontSize: 12.5, fontWeight: 600 }}>{pct(a.shrinkPct)}</span></td>
                     <td style={tdC}><Badge d={a.decision} /></td>
                     <td style={{ ...td, textAlign: "left", verticalAlign: "top" }}><CommentCell value={comments[a.id] || ""} onChange={(t) => setComment(a.id, t)} source={a.source} /></td>
@@ -452,18 +457,28 @@ function Loading({ rows, lens, setLens, openRow, setOpenRow, comments, setCommen
     </div>
   );
 }
-function LoadCell({ actualN, ideal, verdict }) {
-  if (!actualN) return <Pill v="—" />;
+function LoadCell({ actualN, ideal, verdict, target }) {
+  if (!actualN) {
+    return (
+      <div className="flex flex-col items-center" style={{ gap: 3 }}>
+        <Pill v="—" />
+        <span style={{ fontSize: 9.5, color: T.faint }}>target {target}</span>
+      </div>
+    );
+  }
   const fill = Math.min(100, (actualN / (ideal * 1.6)) * 100);
   const markerPos = Math.min(100, (ideal / (ideal * 1.6)) * 100);
   const [fg] = V_STYLE[verdict] || V_STYLE["—"];
   return (
-    <div className="flex items-center justify-center gap-2">
-      <div style={{ width: 64, height: 6, background: "#EAEFF6", borderRadius: 6, position: "relative" }}>
-        <div style={{ width: fill + "%", height: "100%", background: fg, borderRadius: 6 }} />
-        <div style={{ position: "absolute", left: markerPos + "%", top: -2, width: 2, height: 10, background: T.navy, opacity: 0.55 }} />
+    <div className="flex flex-col items-center" style={{ gap: 3 }}>
+      <div className="flex items-center justify-center gap-2">
+        <div style={{ width: 64, height: 6, background: "#EAEFF6", borderRadius: 6, position: "relative" }}>
+          <div style={{ width: fill + "%", height: "100%", background: fg, borderRadius: 6 }} />
+          <div style={{ position: "absolute", left: markerPos + "%", top: -2, width: 2, height: 10, background: T.navy, opacity: 0.55 }} />
+        </div>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: fg, minWidth: 34, textAlign: "left" }}>1:{actualN.toFixed(1)}</span>
       </div>
-      <span style={{ fontSize: 11.5, fontWeight: 700, color: fg, minWidth: 34, textAlign: "left" }}>1:{actualN.toFixed(1)}</span>
+      <span style={{ fontSize: 9.5, color: T.faint }}>target {target}</span>
     </div>
   );
 }
