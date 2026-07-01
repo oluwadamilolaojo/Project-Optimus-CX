@@ -13,5 +13,7 @@ body {
 *::-webkit-scrollbar { height: 8px; width: 8px; }
 *::-webkit-scrollbar-thumb { background: #cdd7e6; border-radius: 8px; }
 .hx-row:hover { background: #FAFCFF; }
+/* Taire: no rounded corners anywhere */
+* { border-radius: 0 !important; }
 textarea { font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
